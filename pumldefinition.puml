@@ -1,0 +1,171 @@
+
+'--------------------------
+' L&F
+' ING Colours
+!define BLACK   #333333
+!define RED     #FF0000
+!define ORANGE  #FF6200
+!define GREY1   #A8A8A8
+!define GREY2   #696969
+!define GREY3   #F1F1F1
+!define FUCHSIA #AB0066
+!define INDIGO  #505199
+!define SKY     #60A6DA
+!define LIME    #D0D93C
+!define LEAF    #349651
+!define WHITE   #FFFFFF
+!define PLUS    #349651
+!define MINUS   #FF0000
+!define TP      #FF6200
+
+' Skinning
+autonumber 1 1 "<b><font color='#FF6200'>[00]"
+skinparam Shadowing false
+skinparam BackgroundColor WHITE
+skinparam ComponentStyle uml2
+skinparam responseMessageBelowArrow true
+skinparam Default {
+    FontName  'Fira Code'
+    FontColor BLACK
+    FontSize  10
+    FontStyle plain
+}
+skinparam Participant {
+    BackgroundColor INDIGO
+    BorderColor BLACK
+    BorderThickness 0
+    FontColor WHITE
+    FontStyle bold
+}
+skinparam Actor {
+    BackgroundColor BLACK
+    BorderColor BLACK
+}
+skinparam sequence {
+  ActorFontStyle bold
+  ActorBackgroundColor WHITE
+  ActorBorderThickness 1
+  ArrowThickness 1
+  ArrowColor GREY2
+  BoxBorderColor BLACK
+  BoxBackgroundColor transparant
+  GroupBorderColor BLACK
+  GroupBackgroundColor transparant
+  GroupBodyBackgroundColor transparent
+  LifeLineBorderColor GREY2
+  LifeLineBackgroundColor GREY1
+}
+skinparam legend {
+    BackgroundColor WHITE
+}
+
+'--------------------------
+'Functions
+!unquoted function $arrowColor($colorArrow='')
+    !if ($colorArrow != '')
+        !$colorArrow = '[' + $colorArrow + ']'
+    !endif
+    !return $colorArrow
+!endfunction
+
+' To functions
+!unquoted procedure $self($fromAct,$uri='',$colorArrow='',$colorLifeLine='')
+    $fromAct -$arrowColor($colorArrow)> $fromAct:$uri
+!endprocedure
+!unquoted procedure $to($fromAct,$toAct,$uri='',$colorArrow='',$colorLifeLine='')
+    $fromAct -$arrowColor($colorArrow)> $toAct:$uri
+    activate $toAct $colorLifeLine
+!endprocedure
+!unquoted procedure $next($fromAct,$toAct,$uri='',$colorArrow='',$colorLifeLine='')
+    $fromAct -$arrowColor($colorArrow)> $toAct:$uri
+    deactivate $fromAct
+    activate $toAct $colorLifeLine
+!endprocedure
+!unquoted procedure $nextinform($fromAct,$toAct,$uri='',$colorArrow='',$colorLifeLine='')
+    $fromAct -$arrowColor($colorArrow)> $toAct:$uri
+    deactivate $fromAct
+!endprocedure
+!unquoted procedure $inform($fromAct,$toAct,$retr='',$colorArrow='')
+    $fromAct -$arrowColor($colorArrow)> $toAct :$retr
+!endprocedure
+!unquoted procedure $hint($fromAct,$toAct,$retr='',$colorArrow='')
+    $fromAct -$arrowColor($colorArrow)-> $toAct :$retr
+!endprocedure
+!unquoted procedure $toGW($fromAct,$toAct,$uri='',$colorArrow='',$colorLifeLine='',$host='api.ing.com')
+    $fromAct -$arrowColor($colorArrow)> gw:$uri\n  Host: $host
+    activate gw $colorLifeLine
+    $fromAct -$arrowColor($colorArrow)>$toAct: $uri
+    activate $toAct $colorLifeLine
+!endprocedure
+
+' From functions
+!unquoted procedure $from($fromAct,$toAct,$retr='',$colorArrow='')
+    $fromAct -$arrowColor($colorArrow)> $toAct --:$retr
+!endprocedure
+!unquoted procedure $backTo($fromAct,$toAct,$retr='',$colorArrow='')
+    $fromAct -$arrowColor($colorArrow)> $toAct --:$retr
+    activate $toAct
+!endprocedure
+!unquoted procedure $fromGW($fromAct,$toAct,$retr='',$colorArrow='')
+   $fromAct -$arrowColor($colorArrow)> gw --:$retr
+    gw -$arrowColor($colorArrow)-> $toAct --:$retr
+!endprocedure
+
+' Call functions
+!unquoted procedure $call($fromAct,$toAct,$uri='',$retr='',$colorArrow='',$colorLifeLine='')
+    $to($fromAct,$toAct,$uri,$colorArrow,$colorLifeLine)
+    $from($toAct,$fromAct,$retr,$colorArrow)
+!endprocedure
+!unquoted procedure $callGW($fromAct,$toAct,$uri='',$retr='',$colorArrow='',$colorLifeLine='',$host='')
+    $toGW($fromAct,$toAct,$uri,$colorArrow,$colorLifeLine,$host)
+    $fromGW($toAct,$fromAct,$retr,$colorArrow)
+!endprocedure
+!unquoted procedure $callWithAction($fromAct,$toAct,$uri='',$retr='',$action='',$colorArrow='',$colorLifeLine='')
+    $to($fromAct,$toAct,$uri,$colorArrow,$colorLifeLine)
+    $toAct -$arrowColor($colorArrow)> $toAct:$action
+    $from($toAct,$fromAct,$retr,$colorArrow)
+!endprocedure
+!unquoted procedure $callWithNoteOver($fromAct,$toAct,$uri='',$retr='',$note='',$colorArrow='',$colorLifeLine='')
+    $to($fromAct,$toAct,$uri,$colorArrow,$colorLifeLine)
+    note over $fromAct,$toAct
+        $note
+    end note
+    $from($toAct,$fromAct,$retr,$colorArrow)
+!endprocedure
+!unquoted procedure $callWithBackend($fromAct,$toAct,$uri='',$retr='',$backend,$backendUri='',$colorArrow='',$colorLifeLine='')
+    $to($fromAct,$toAct,$uri,$color,$colorLifeLine)
+    $to($toAct,$backend,$backendUri,$colorArrow,$colorLifeLine)
+    deactivate $backend
+    $from($toAct,$fromAct,$retr,$colorArrow)
+!endprocedure
+!unquoted procedure $callWithBackendCall($fromAct,$toAct,$uri,$retr='',$backend,$backendUri='',$backendRetr='',$colorArrow='',$colorLifeLine='')
+    $to($fromAct,$toAct,$uri,$colorArrow,$colorLifeLine)
+    $call($toAct,$backend,$backendUri,$backendRetr,$colorArrow,$colorLifeLine)
+    $from($toAct,$fromAct,$retr,$colorArrow)
+!endprocedure
+!unquoted procedure $callWithBackendCallNote($fromAct,$toAct,$uri,$retr='',$backend,$backendUri='',$backendRetr='',$note='',$colorArrow='',$colorLifeLine='')
+    $to($fromAct,$toAct,$uri,$colorArrow,$colorLifeLine)
+    note over $fromAct,$toAct
+        $note
+    end note
+    $call($toAct,$backend,$backendUri,$backendRetr,$colorArrow,$colorLifeLine)
+    $from($toAct,$fromAct,$retr,$colorArrow)
+!endprocedure
+!unquoted procedure $callGwWithBackendCall($fromAct,$toAct,$uri,$retr='',$backend,$backendUri='',$backendRetr='',$colorArrow='',$colorLifeLine='',$host='')
+    $toGW($fromAct,$toAct,$uri,$colorArrow,$colorLifeLine,$host)
+    $call($toAct,$backend,$backendUri,$backendRetr,$colorArrow,$colorLifeLine)
+    $fromGW($toAct,$fromAct,$retr,$colorArrow)
+!endprocedure
+
+' Eventbus
+!unquoted procedure $businessEvent($fromAct,$msg,$colorArrow='',$colorLifeLine='')
+    $to($fromAct,evb,'Business event: $msg',$colorArrow,$colorLifeLine)
+    evb--
+!endprocedure
+!unquoted procedure $nrsEvent($fromAct,$msg,$colorArrow='',$colorLifeLine='')
+    $to($fromAct,evb,'NRS event: $msg',$colorArrow,$colorLifeLine)
+    evb -$arrowColor($colorArrow)> nrs:$msg
+    deactivate evb
+!endprocedure
+
+
